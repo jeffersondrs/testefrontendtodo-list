@@ -5,7 +5,7 @@ import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 export default function Form() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [username, setUsername] = useState("Jeffrey");
+  const [username, setUsername] = useState("");
 
   const handleTitleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setTitle(event.target.value);
@@ -14,6 +14,13 @@ export default function Form() {
   const handleContentChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     setContent(event.target.value);
   };
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const user = localStorage.getItem("user");
+      setUsername(user || "");
+    }
+  }, []);
 
   const isFormEmpty = title.trim() === "" || content.trim() === "";
 
@@ -32,10 +39,12 @@ export default function Form() {
     });
     const data = await response.json();
 
-    if (data) {
+    if (!response.ok) {
+      const error = new Error("An error occurred while creating the item");
+      throw error;
+    } else {
       setTitle("");
       setContent("");
-      window.location.reload();
     }
   };
 
@@ -57,7 +66,7 @@ export default function Form() {
       <label htmlFor="title" className="flex flex-col gap-2">
         Content
         <textarea
-          className="border-2 border-gray-300 p-1 rounded-lg w-full h-[74px] max-h-[164px]  placeholder:text-[#CCCCCC]"
+          className="border-2 border-gray-300 p-2 rounded-lg w-full h-[74px] max-h-[164px]  placeholder:text-[#CCCCCC]"
           maxLength={500}
           placeholder="Content here"
           value={content}

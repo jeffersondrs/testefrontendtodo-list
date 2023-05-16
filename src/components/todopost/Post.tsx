@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import EditModal from "../editemodal/EditModal";
 import DeleteModal from "../deletemodal/DeleteModal";
 import { MdDeleteForever } from "react-icons/md";
@@ -15,6 +15,7 @@ interface Posts {
 }
 
 export default function Post() {
+  const [username, setUsername] = useState<string>("");
   const [isDeleteModal, setIsDeleteModal] = useState<boolean>(false);
   const [data, setData] = useState<Posts[]>([]);
   const [limit, setLimit] = useState(10);
@@ -32,9 +33,9 @@ export default function Post() {
     setData(data.results);
   }, [limit]);
 
-  useEffect(() => {
+  setTimeout(() => {
     fetchAPI();
-  }, [fetchAPI]);
+  }, 1000);
 
   const handleModal = (itemId: number) => {
     setEditingItemId(itemId);
@@ -43,6 +44,13 @@ export default function Post() {
   const handleCancelEdit = () => {
     setEditingItemId(null);
   };
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const user = localStorage.getItem("user");
+      setUsername(user || "");
+    }
+  }, []);
 
   return (
     <>
@@ -58,19 +66,19 @@ export default function Post() {
                 <h1 className="text-[22px] w-full font-bold leading-6">
                   {item.title}
                 </h1>
-                {item.username === "Jeffrey" && (
-                  <div className="flex flex-row gap-3">
-                    <button className="font-bold text-[14px] leading-6">
+                {username === item.username && (
+                  <div className="flex flex-row gap-5">
+                    <button className="font-bold text-2xl leading-6">
                       <MdDeleteForever onClick={handleCloseDeleteModal} />
                     </button>
-                    <button className="font-bold text-[14px] leading-6">
+                    <button className="font-bold text-2xl leading-6">
                       <BiEdit onClick={() => handleModal(item.id)} />
                     </button>
                   </div>
                 )}
               </header>
               {isEditing && (
-                <div className="fixed modal w-screen h-screen flex justify-center items-center top-0 left-0">
+                <div className="fixed w-screen h-screen flex justify-center items-center top-0 left-0">
                   <EditModal
                     content={item.content}
                     title={item.title}
@@ -84,20 +92,21 @@ export default function Post() {
                 </div>
               )}
               {isDeleteModal && (
-                <div className="fixed modal w-screen h-screen flex justify-center items-center top-0 left-0">
+                <div className="fixed w-screen h-screen flex justify-center items-center top-0 left-0">
                   <DeleteModal
                     id={item.id}
                     cancelDelete={() => setIsDeleteModal(!isDeleteModal)}
                   />
+
                   <span
                     onClick={handleCloseDeleteModal}
-                    className="z-10 w-screen h-screen md:h-full md:w-full sm:h-full sm:w-full opacity-50 bg-slate-600 top-0 left-0 flex flex-col items-center justify-center hover:cursor-pointer"
+                    className="z-10 w-screen h-screen md:h-full md:w-full sm:h-full sm:w-full bg-gray-300/5 hover:cursor-pointer"
                   ></span>
                 </div>
               )}
-              <div className="border-[#999999] border rounded-b-2xl p-6 flex flex-col gap-2">
+              <div className="border-[#999999] border rounded-b-2xl border-t-0 p-6 flex flex-col gap-2">
                 <div className="flex flex-row justify-between w-full text-[#777777]">
-                  <span>{item.username}</span>
+                  <span className="truncate">{item.username}</span>
                   <span>
                     {formatDistanceToNow(new Date(item.created_datetime), {
                       locale: enUS,
